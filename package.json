@@ -1,0 +1,14 @@
+{
+  "name": "BACK-END-API",
+  "version": "1.0.0",
+  "description": "BASQUETE É MUITO BOM, MAS TEM ALGUMAS PESSOAS QUE SÓ GOSTAM E NÃO JOGAM BEM",
+  "main": "server.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "Rosilayne Ferreira Freitas",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
