@@ -8,6 +8,7 @@ import dotenv from "dotenv"; // Importa o pacote dotenv para carregar variáveis
 // ######
 // Local onde as configurações do servidor serão feitas
 // ######
+
 const app = express(); // Inicializa o servidor Express
 const port = 3000; // Define a porta onde o servidor irá escutar
 dotenv.config(); // Carrega as variáveis de ambiente do arquivo .env
