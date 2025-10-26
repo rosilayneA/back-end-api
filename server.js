@@ -181,6 +181,134 @@ app.put("/questoes/:id", async (req, res) => {
   }
 });
 
+// ========================== DIRETORES ==========================
+
+// GET /diretores – lista todos
+app.get("/diretores", async (req, res) => {
+  console.log("Rota GET /diretores solicitada");
+
+  try {
+    const db = conectarBD();
+    const resultado = await db.query("SELECT * FROM diretores ORDER BY id_diretor");
+    res.json(resultado.rows);
+  } catch (e) {
+    console.error("Erro ao buscar diretores:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+// GET /diretores/:id – busca por ID
+app.get("/diretores/:id", async (req, res) => {
+  console.log("Rota GET /diretores/:id solicitada");
+
+  try {
+    const id = req.params.id;
+    const db = conectarBD();
+    const resultado = await db.query("SELECT * FROM diretores WHERE id_diretor = $1", [id]);
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ mensagem: "Diretor não encontrado" });
+    }
+
+    res.json(resultado.rows[0]);
+  } catch (e) {
+    console.error("Erro ao buscar diretor:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+// POST /diretores – cria novo diretor
+app.post("/diretores", async (req, res) => {
+  console.log("Rota POST /diretores solicitada");
+
+  try {
+    const data = req.body;
+
+    if (!data.nome) {
+      return res.status(400).json({
+        erro: "O campo 'nome' é obrigatório.",
+      });
+    }
+
+    const db = conectarBD();
+    const consulta = `
+      INSERT INTO diretores (nome, estado_origem, data_nascimento, biografia)
+      VALUES ($1, $2, $3, $4)
+    `;
+    await db.query(consulta, [
+      data.nome,
+      data.estado_origem || null,
+      data.data_nascimento || null,
+      data.biografia || null,
+    ]);
+
+    res.status(201).json({ mensagem: "Diretor criado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao inserir diretor:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+// PUT /diretores/:id – atualiza informações do diretor
+app.put("/diretores/:id", async (req, res) => {
+  console.log("Rota PUT /diretores/:id solicitada");
+
+  try {
+    const id = req.params.id;
+    const data = req.body;
+    const db = conectarBD();
+
+    // Verifica se o diretor existe
+    const verifica = await db.query("SELECT * FROM diretores WHERE id_diretor = $1", [id]);
+    if (verifica.rows.length === 0) {
+      return res.status(404).json({ mensagem: "Diretor não encontrado" });
+    }
+
+    // Atualiza com os novos dados ou mantém os antigos
+    const diretorAtual = verifica.rows[0];
+    const nome = data.nome || diretorAtual.nome;
+    const estado_origem = data.estado_origem || diretorAtual.estado_origem;
+    const data_nascimento = data.data_nascimento || diretorAtual.data_nascimento;
+    const biografia = data.biografia || diretorAtual.biografia;
+
+    await db.query(
+      `
+      UPDATE diretores 
+      SET nome = $1, estado_origem = $2, data_nascimento = $3, biografia = $4
+      WHERE id_diretor = $5
+      `,
+      [nome, estado_origem, data_nascimento, biografia, id]
+    );
+
+    res.json({ mensagem: "Diretor atualizado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao atualizar diretor:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+// DELETE /diretores/:id – exclui um diretor
+app.delete("/diretores/:id", async (req, res) => {
+  console.log("Rota DELETE /diretores/:id solicitada");
+
+  try {
+    const id = req.params.id;
+    const db = conectarBD();
+
+    const verifica = await db.query("SELECT * FROM diretores WHERE id_diretor = $1", [id]);
+    if (verifica.rows.length === 0) {
+      return res.status(404).json({ mensagem: "Diretor não encontrado" });
+    }
+
+    await db.query("DELETE FROM diretores WHERE id_diretor = $1", [id]);
+    res.json({ mensagem: "Diretor excluído com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao excluir diretor:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+
 app.listen(port, () => {            // Um socket para "escutar" as requisições
   console.log(`Serviço rodando na porta:  ${port}`);
 });
